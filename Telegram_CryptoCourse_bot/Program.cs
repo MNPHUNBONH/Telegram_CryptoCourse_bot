@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -220,8 +221,21 @@ namespace TelegramBot
 					cancellationToken: cancellationToken);
 			}
 
-			private async Task DeleteMessage(long chatId, int messageId, CancellationToken cancellationToken) => 
-				await _telegramBotClient.DeleteMessageAsync(chatId, messageId, cancellationToken);
+			private async Task DeleteMessage(long chatId, int messageId, CancellationToken cancellationToken)
+			{
+				try
+				{
+					await _telegramBotClient.DeleteMessageAsync(chatId, messageId, cancellationToken);
+				}
+				catch (ApiRequestException exception)
+				{
+					if (exception.ErrorCode == 400)
+					{
+						Console.WriteLine("User deleted message");
+					}
+				}
+			}
+			
 
 			private bool IsStartCommand(string messageText)
 			{
